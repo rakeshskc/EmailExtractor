@@ -19,6 +19,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
+
 import com.email.util.OsUtils;
 
 public class BatchEmailExtractor {
@@ -37,25 +38,50 @@ public class BatchEmailExtractor {
 			alreadyExtracted = "E:/ShatamBI/Rye_Delivery/10March/emailResult.tab";
 			timeOutRecords = "E:/ShatamBI/Rye_Delivery/10March/timeOutRecords.tab";
 		}
+		
+		batchEmailExtractor(path, outPutPath, alreadyExtracted, timeOutRecords);
+	}
+
+	public static void batchEmailExtractor(String inputEmailFile,
+			String outputPath) {
+	}
+
+	
+	public static void batchEmailExtractor(String inputEmailFile,
+			String outputPath, String ignorURLPath) throws IOException,
+			InterruptedException, ExecutionException {
+		batchEmailExtractor(inputEmailFile, outputPath, ignorURLPath,
+				ignorURLPath);
+	}
+
+	public static void batchEmailExtractor(String inputEmailFile,
+			String outputPath, String ignorURLPath, String timeOutURLListPath)
+			throws IOException, InterruptedException, ExecutionException {
 
 		long start = System.currentTimeMillis();
-		List<String> urlList = Files.readAllLines(Paths.get(path));
+
+		FileWriter writer = new FileWriter(new File(outputPath));
+		FileWriter writer1 = new FileWriter(new File(timeOutURLListPath),true);
+
+		List<String> urlList = Files.readAllLines(Paths.get(inputEmailFile));
 		List<String> alreadyFetchedList = Files.readAllLines(Paths
-				.get(alreadyExtracted));
+				.get(ignorURLPath));
 		List<String> timeOutRecordsList = Files.readAllLines(Paths
-				.get(timeOutRecords));
+				.get(timeOutURLListPath));
 		alreadyFetchedList.addAll(timeOutRecordsList);
+
 		Set<String> visited = new HashSet<String>();
 		for (String v : alreadyFetchedList) {
 			String url = v.split("\t")[0];
 			visited.add(url);
 		}
 
-		BatchThreadFactory factory = new BatchThreadFactory();
+		// Thread Factory
+		BThreadFactory factory = new BThreadFactory();
 		ExecutorService service = Executors.newFixedThreadPool(75, factory);
 		List<Future<Result>> resutlSet = new ArrayList<Future<Result>>();
 		List<String> urlListExe = new ArrayList<String>();
-		
+
 		for (int i = 0; i < urlList.size(); i++) {
 			String url = urlList.get(i);
 			if (!url.contains("http")) {
@@ -70,9 +96,6 @@ public class BatchEmailExtractor {
 			urlListExe.add(url);
 		}
 
-		//
-		FileWriter writer = new FileWriter(new File(outPutPath));
-		FileWriter writer1 = new FileWriter(new File(timeOutRecords));
 		int successRate = 0;
 		for (int i = 0; i < resutlSet.size(); i++) {
 
@@ -115,16 +138,4 @@ public class BatchEmailExtractor {
 			System.exit(1);
 		}
 	}
-}
-
-class BatchThreadFactory implements ThreadFactory {
-
-	static AtomicInteger ato = new AtomicInteger(0);
-
-	@Override
-	public Thread newThread(Runnable r) {
-		Thread t = new Thread(r, "EmailExtractThread-" + ato.getAndIncrement());
-		return t;
-	}
-
 }
