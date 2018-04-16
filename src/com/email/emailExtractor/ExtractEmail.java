@@ -29,6 +29,7 @@ public class ExtractEmail {
 	public static void main(String args[]) throws IOException {
 
 		String link = "http://www.aqualeader.com/en_US/contact/";
+		link = "http://www.hcll.ca";
 		ExtractEmail obj = new ExtractEmail();
 		Set<String> set = obj.getEmailSet(link);
 		System.out.println(set);
@@ -36,6 +37,10 @@ public class ExtractEmail {
 
 	public String getRedirectLink() {
 		return this.redirectLink;
+	}
+
+	public static void log(Object o) {
+		System.out.println(o);
 	}
 
 	private String _getSource(String url) throws IOException,
@@ -62,8 +67,9 @@ public class ExtractEmail {
 		this.baseLink = link;
 		try {
 			html = _getSource(link);
-			// U.log(html);
+			//log(html);
 		} catch (Exception ex) {
+			//log(ex);
 			return null;
 		}
 		Set<String> set = getAllLinks(html);
