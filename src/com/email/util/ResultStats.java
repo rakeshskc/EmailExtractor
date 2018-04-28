@@ -11,9 +11,11 @@ public class ResultStats {
 	public static void main(String args[]) throws IOException {
 
 		List<String> list = Files.readAllLines(Paths
-				.get("D:/pscp/emailtResult41.tab"));
+				.get("E:/ShatamBI/Rye_Delivery/RyeWorkingDirectory/Results_14_18UpdatedDataURLs.tab"));
 
-		FileWriter writer = new FileWriter("D:/pscp/emailResult4Out1.tab");
+		
+		
+		FileWriter writer = new FileWriter("E:/ShatamBI/Rye_Delivery/RyeWorkingDirectory/Results_14_18UpdatedDataURLsOUT.tab");
 		for (String row : list) {
 
 			if (row.matches("(.+?)(\\[.+?@.+?\\])")) {

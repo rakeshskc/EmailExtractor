@@ -10,8 +10,9 @@ public class MonitorigThread implements Runnable {
 
 	static ExecutorService service = Executors.newSingleThreadExecutor();
 	private volatile boolean isCancel;
+	public static long logRunningTimeOut = 1000 * 60 * 4;
 	private ConcurrentMap<FutureTask<Result>, Long> map;
-
+	
 	public MonitorigThread(ConcurrentMap<FutureTask<Result>, Long> map) {
 		this.map = map;
 	}
@@ -23,25 +24,24 @@ public class MonitorigThread implements Runnable {
 
 			try {
 				Thread.sleep(1000);
-				System.out.println("RUNNNNNNNNNNNNNNNN"
-						+ BatchEmailExtractor.pool.getCompletedTaskCount()
-						+ "\t" + map.size() + "\t"
-						+ CustomThreadPoolExecutor.activeTasks.size());
+				// System.out.println("RUNNNNNNNNNNNNNNNN"
+				// + BatchEmailExtractor.pool.getCompletedTaskCount()
+				// + "\t" + map.size() + "\t"
+				// + CustomThreadPoolExecutor.activeTasks.size());
 
 				for (Entry<FutureTask<Result>, Long> entry : map.entrySet()) {
 					long end = System.currentTimeMillis();
 					long t = (end - entry.getValue());
-					if (t >= (1000 * 60 * 2)) {
+					if (t >= (logRunningTimeOut)) {
 						entry.getKey().cancel(true);
 						map.remove(entry.getKey());
 					}
 				}
 
 			} catch (InterruptedException e) {
-				// e.printStackTrace();
+
 			} catch (Exception ex) {
-				// ex.printStackTrace();
-				// System.out.println(ex);
+
 			}
 		}
 	}

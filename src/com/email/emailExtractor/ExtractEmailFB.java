@@ -1,39 +1,71 @@
 package com.email.emailExtractor;
 
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
 
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
+import org.apache.commons.logging.LogFactory;
+import org.apache.xalan.xsltc.compiler.sym;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.htmlunit.HtmlUnitDriver;
+
 import com.email.util.Util;
 
-public class ExtractEmail {
+public class ExtractEmailFB {
 
+	static {
+		LogFactory.getFactory().setAttribute("org.apache.commons.logging.Log",
+				null);
+		//
+		java.util.logging.Logger.getLogger("com.gargoylesoftware.htmlunit")
+				.setLevel(Level.OFF);
+		//
+		java.util.logging.Logger.getLogger("org.apache.commons.httpclient")
+				.setLevel(Level.OFF);
+
+	}
 	private static Set<String> visitedLinks = new HashSet<String>();
 	private String baseLink = null;
 	private String redirectLink = null;
+	private String uniqueId = null;
 
 	public static void main(String args[]) throws IOException {
 
 		String link = "http://www.aqualeader.com/en_US/contact/";
 		link = "http://www.hcll.ca";
-		link ="https://www.facebook.com/pg/Shatamtech/about/?ref=page_internal";
-		ExtractEmail obj = new ExtractEmail();
-		Set<String> set = obj.getEmailSet(link);
-		System.out.println(set);
+		link = "https://spolumbos.com/contact/";
+		FileWriter writer = new FileWriter("D:/rest");
+
+		List<String> urlList = Files.readAllLines(Paths
+				.get("E:/ShatamBI/Rye_Delivery/RyeWorkingDirectory/newURL.tab"));
+		for (String url : urlList) {
+			url = "http://www.athabascaadvocate.com";
+			ExtractEmailFB obj = new ExtractEmailFB();
+			Set<String> set = obj.getEmailSet(url);
+			System.out.println(set);
+			writer.write(url + "\t" + set.toString() + "\n");
+			writer.flush();
+			break;
+		}
+		writer.close();
 	}
 
 	public String getRedirectLink() {
@@ -63,34 +95,63 @@ public class ExtractEmail {
 		return html;
 	}
 
+	private String _getFBAboutLink(String link) {
+		if (!link.contains("https:")) {
+			link = link.replace("http:", "https:");
+		}
+		String fb = "https://www.facebook.com/";
+		String aboutFb = "https://www.facebook.com/pg/{aboutPage}/about/?ref=page_internal";
+		String newAboutFb = null;
+		if (fb.length() < link.length()) {
+			String index = link.substring(fb.length());
+			newAboutFb = aboutFb.replace("{aboutPage}", index);
+			System.out.println(newAboutFb);
+		}
+		return (newAboutFb != null) ? newAboutFb : link;
+	}
+
 	public Set<String> getEmailSet(String link) throws IOException {
 		String html = null;
 		this.baseLink = link;
 		try {
-			html = _getSource(link);			
+			html = _getSource(link);
+			// System.out.println(html);
 		} catch (Exception ex) {
 			// log(ex);
 			return null;
 		}
 		Set<String> set = getAllLinks(html);
+		// System.out.println(set);
 		Set<String> searchLink = getBestLinks(set);
 		searchLink.add(link);// Home page link
 		Set<String> emailSet = new HashSet<String>();
 		for (String emailLink : searchLink) {
 			// log(emailLink);
-			String pageHtml = null;
-			try {
-				pageHtml = getHTML(emailLink);
-			} catch (Exception ex) {
-				continue;
+
+			if (emailLink.contains("facebook.com")) {
+				// emailLink = _getFBAboutLink(emailLink);
+
+				String uniqueId = Util.match(emailLink, "/[0-9]{8,}");
+				if (uniqueId != null) {
+					emailLink = "https://www.facebook.com" + uniqueId;
+					this.uniqueId = uniqueId;
+
+				}
+
+				String pageHtml = null;
+				try {
+					pageHtml = getHTML(emailLink);
+				} catch (Exception ex) {
+					continue;
+				}
+				Set<String> email = searchForEmail(pageHtml);
+				emailSet.addAll(email);
 			}
-			Set<String> email = searchForEmail(pageHtml);
-			emailSet.addAll(email);
 		}
 		return emailSet;
 	}
 
-	private static String linkRgx = "<a href=['\"]{1}(.+?)['\"]{1}(.+?)>";
+	private static String linkRgx = "<a href=['\"]{1}(.+?)['\"]{1}(.+?)?>";
 	private static String urlMatcherRgx = "(https?|ftp|file|www)://[a-zA-Z0-9+&@#/%?=~_|!:,.;]*[-a-zA-Z0-9+&@#/%=~_|]";
 
 	public Set<String> getAllLinks(String html) {
@@ -103,7 +164,7 @@ public class ExtractEmail {
 
 	}
 
-	private static String pages = "contacts?|abouts?";
+	private static String pages = "contacts?|abouts?|facebook?";
 
 	@Deprecated
 	private String makeLink1(String url) {
@@ -197,6 +258,10 @@ public class ExtractEmail {
 		sc.init(null, trustAllCerts, new java.security.SecureRandom());
 		HttpsURLConnection con = null;
 		con = (HttpsURLConnection) url.openConnection();
+		String redirectLink = getRedirectURLS(link);
+		if (redirectLink != null) {
+			this.redirectLink = redirectLink;
+		}
 		con.setAllowUserInteraction(true);
 		con.setRequestMethod("GET");
 		con.setSSLSocketFactory(sc.getSocketFactory());
@@ -216,7 +281,25 @@ public class ExtractEmail {
 			}
 		}
 		return null;
+	}
 
+	private String getRedirectURLS(String link) throws IOException {
+		URL u = new URL(link);
+		HttpsURLConnection conn = (HttpsURLConnection) u.openConnection();
+		int status = ((HttpsURLConnection) conn).getResponseCode();
+
+		if (status != HttpsURLConnection.HTTP_OK) {
+			if (status == HttpsURLConnection.HTTP_MOVED_TEMP
+					|| status == HttpsURLConnection.HTTP_MOVED_PERM
+					|| status == HttpsURLConnection.HTTP_SEE_OTHER) {
+
+				String newUrl = conn.getHeaderField("Location");
+				return newUrl;
+			}
+
+		}
+		InputStream is = conn.getInputStream();
+		return conn.getURL().toString();
 	}
 
 	private InputStream _getHTMLNonSecure(String link) throws IOException,
@@ -234,11 +317,30 @@ public class ExtractEmail {
 
 	public String getHTML(String link) throws IOException,
 			KeyManagementException, NoSuchAlgorithmException {
+
 		InputStream input = null;
 		if (link.toLowerCase().contains("https")) {
 			input = _getHTMLSecure(link);
 		} else {
 			input = _getHTMLNonSecure(link);
+		}
+
+		if (this.redirectLink != null) {
+			if (this.uniqueId != null) {
+				int i = -1;
+				if ((i = this.redirectLink.lastIndexOf("/")) != -1) {
+					this.redirectLink = this.redirectLink.substring(0, i);
+				}
+				String fb = _getFBAboutLink(this.redirectLink);
+				System.out.println(fb);
+				HtmlUnitDriver driver = new HtmlUnitDriver();
+				driver.get(this.redirectLink);
+				String html1 = driver.getPageSource();
+				FileWriter er = new FileWriter(new File("D:/s"));
+				er.write(html1);
+				er.close();
+				return html1;
+			}
 		}
 
 		byte[] arr = new byte[2024];
@@ -249,10 +351,12 @@ public class ExtractEmail {
 			buff.append(str);
 		}
 		String html = Util.removeHtmlComments(buff.toString());
-		// System. out.println(html);
+		// System.out.println(html);
 		return html;
 	}
 }
+
+// https://www.facebook.com/pages/The-Athabasca-Advocate/122608544476186
 
 // http://www.comark.ca/ Note for this link pattern.
 // link = "http://www.aro.ca"; > Use HTML unit driver

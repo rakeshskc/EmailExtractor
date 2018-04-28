@@ -24,8 +24,8 @@ public class BatchExtractor {
 		long start = System.currentTimeMillis();
 		String path = "/root/Rakesh/URL.tab";
 		String outPutPath = "/root/Rakesh/emailResult1.tab";
-		path = "E:/ShatamBI/Rye_Delivery/10March/URL.tab";
-		outPutPath = "E:/ShatamBI/Rye_Delivery/10March/emailResult12.tab";
+		path = "E:/ShatamBI/Rye_Delivery/RyeWorkingDirectory/URL.tab";
+		outPutPath = "E:/ShatamBI/Rye_Delivery/RyeWorkingDirectory/emailResult12.tab";
 		List<String> urlList = Files.readAllLines(Paths.get(path));
 		List<Future<String>> resutlSet = new ArrayList<Future<String>>();
 

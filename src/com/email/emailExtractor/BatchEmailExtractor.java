@@ -38,10 +38,10 @@ public class BatchEmailExtractor {
 		String timeOutRecords = "/root/RYECache/timeOutRecords.tab";
 
 		if (OsUtils.isWindows()) {
-			path = "E:/ShatamBI/Rye_Delivery/10March/URL.tab";
-			outPutPath = "E:/ShatamBI/Rye_Delivery/10March/emailResult1.tab";
-			alreadyExtracted = "E:/ShatamBI/Rye_Delivery/10March/emailResult3.tab";
-			timeOutRecords = "E:/ShatamBI/Rye_Delivery/10March/timeOutRecords.tab";
+			path = "E:/ShatamBI/Rye_Delivery/RyeWorkingDirectory/newURL.tab";
+			outPutPath = "E:/ShatamBI/Rye_Delivery/RyeWorkingDirectory/emailResult1.tab";
+			alreadyExtracted = "E:/ShatamBI/Rye_Delivery/RyeWorkingDirectory/emailResult3.tab";
+			timeOutRecords = "E:/ShatamBI/Rye_Delivery/RyeWorkingDirectory/timeOutRecords.tab";
 		}
 
 		batchEmailExtractor(path, outPutPath, alreadyExtracted, timeOutRecords);
@@ -51,6 +51,16 @@ public class BatchEmailExtractor {
 			String outputPath) {
 	}
 
+	/**
+		Batch wise extraction of emails using MultiThreaded Program
+		@param : inputEmailFile
+	             List of email in file separate by newline
+	    @param : outputPath
+	             Output file path.
+	    @param :  ignorURLPath
+	            List of URL which are igoner by Batch Email Extractor Tool
+	    @author Rakesh Chaudhari                          
+	*/
 	public static void batchEmailExtractor(String inputEmailFile,
 			String outputPath, String ignorURLPath) throws IOException,
 			InterruptedException, ExecutionException {
@@ -153,5 +163,3 @@ public class BatchEmailExtractor {
 		writer.close();
 	}
 }
-
-// sales@accu-fab.ca

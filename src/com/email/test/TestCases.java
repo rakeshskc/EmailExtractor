@@ -44,4 +44,14 @@ public class TestCases extends TestCase {
 		assertEquals(true, set.contains("epic@easyhome.ca"));
 	}
 
+	@Test
+	public void testForMultilineHyperTag() throws IOException {
+		String link = "https://www.sonscapeinterlock.com/contact.html";
+		ExtractEmail obj = new ExtractEmail();
+		Set<String> set = obj.getEmailSet(link);		
+		assertEquals(true, set.contains("joseph.a.galluzzo@gmail.com"));
+	}
+	
+	//https://www.sonscapeinterlock.com/contact.html
+	
 }

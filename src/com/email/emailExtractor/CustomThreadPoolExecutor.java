@@ -83,8 +83,7 @@ public class CustomThreadPoolExecutor extends ThreadPoolExecutor {
 
 	@Override
 	protected void beforeExecute(Thread t, Runnable r) {
-		super.beforeExecute(t, r);
-
+		super.beforeExecute(t, r);		
 		if (r instanceof MyFutureTask) {
 
 			MyFutureTask<Result> d = (MyFutureTask<Result>) r;
@@ -101,6 +100,7 @@ public class CustomThreadPoolExecutor extends ThreadPoolExecutor {
 	@Override
 	protected void afterExecute(Runnable r, Throwable t) {
 		super.afterExecute(r, t);
+		System.out.println(r + "----------");
 		activeTasks.remove(r);
 		if (t != null) {
 			System.out.println("Perform exception handler logic");
