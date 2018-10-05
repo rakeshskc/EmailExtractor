@@ -25,7 +25,6 @@ public class Extractor implements Callable<Result> {
 		} catch (Exception ex) {
 			System.out.println(ex);
 		}
-
 		return new Result(this.link, null);
 
 	}

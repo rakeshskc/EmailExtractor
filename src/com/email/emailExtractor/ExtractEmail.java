@@ -30,7 +30,7 @@ public class ExtractEmail {
 
 		String link = "http://www.aqualeader.com/en_US/contact/";
 		link = "http://www.hcll.ca";
-		link ="http://laspolasdelvalle.com/";
+		link = "http://laspolasdelvalle.com/";
 		ExtractEmail obj = new ExtractEmail();
 		Set<String> set = obj.getEmailSet(link);
 		System.out.println(set);
@@ -67,7 +67,7 @@ public class ExtractEmail {
 		String html = null;
 		this.baseLink = link;
 		try {
-			html = _getSource(link);			
+			html = _getSource(link);
 		} catch (Exception ex) {
 			// log(ex);
 			return null;
@@ -77,12 +77,15 @@ public class ExtractEmail {
 		searchLink.add(link);// Home page link
 		Set<String> emailSet = new HashSet<String>();
 		for (String emailLink : searchLink) {
-			// log(emailLink);
+
 			String pageHtml = null;
 			try {
 				pageHtml = getHTML(emailLink);
 			} catch (Exception ex) {
 				continue;
+			}
+			if (Thread.currentThread().isInterrupted()) {
+				break;
 			}
 			Set<String> email = searchForEmail(pageHtml);
 			emailSet.addAll(email);

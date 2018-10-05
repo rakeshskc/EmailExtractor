@@ -10,6 +10,7 @@ public class BThreadFactory implements ThreadFactory {
 	@Override
 	public Thread newThread(Runnable r) {
 		Thread t = new Thread(r, "EmailExtractThread-" + ato.getAndIncrement());
+		//t.setDaemon(true);
 		return t;
 	}
 

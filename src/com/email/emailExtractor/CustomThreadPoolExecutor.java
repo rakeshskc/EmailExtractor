@@ -81,6 +81,11 @@ public class CustomThreadPoolExecutor extends ThreadPoolExecutor {
 		return new MyFutureTask<T>(callable);
 	}
 
+	protected void terminated() {
+		super.terminated();
+		
+	}
+
 	@Override
 	protected void beforeExecute(Thread t, Runnable r) {
 		super.beforeExecute(t, r);
