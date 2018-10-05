@@ -28,14 +28,14 @@ class MyThread {
 	public String toString() {
 		return t.getName() + "\t" + time;
 	}
-	
-	public long getTime(){
-		return time;		
+
+	public long getTime() {
+		return time;
 	}
-	
-	public Thread getThread(){
+
+	public Thread getThread() {
 		return this.t;
-	}	
+	}
 }
 
 public class CustomThreadPoolExecutor extends ThreadPoolExecutor {
@@ -83,7 +83,7 @@ public class CustomThreadPoolExecutor extends ThreadPoolExecutor {
 
 	@Override
 	protected void beforeExecute(Thread t, Runnable r) {
-		super.beforeExecute(t, r);		
+		super.beforeExecute(t, r);
 		if (r instanceof MyFutureTask) {
 
 			MyFutureTask<Result> d = (MyFutureTask<Result>) r;
@@ -123,13 +123,13 @@ public class CustomThreadPoolExecutor extends ThreadPoolExecutor {
 			if (res != null && res.getResultSet() == null) {
 				try {
 					this.iWriter.write(res.getLink() + "\t"
-							+ "Email Not Found \n");
+							+ "Email Not Found or Site is Incctive \n");
 				} catch (IOException e) {
 				}
-				System.out.println("Email Not Found" + res.getLink()
+				System.out.println("Email Not Found\t" + res.getLink()
 						+ "\t Submitted Task: " + submittedTask.size());
 				submittedTask.remove(f);
-				// return;
+				return;
 			}
 
 			if (res == null) {
@@ -139,21 +139,20 @@ public class CustomThreadPoolExecutor extends ThreadPoolExecutor {
 				} catch (IOException e) {
 				}
 				return;
-			} else {
-				System.out.println("Result is Null\t" + f.isDone() + "\t" + r);
-				try {
-					this.iWriter.write(r + "\tResult is Null\n");
-				} catch (IOException e) {
-				}
 			}
 
 			Set<String> set = res.getResultSet();
 			if (set != null && set.size() > 0) {
-				System.out.println("Email Id Found: " + set);
+				System.out.println("Email Id Found: " + res.getLink() + "\t"
+						+ set);
 				if (this.iWriter != null) {
 					this.iWriter.write(res.getLink() + "\t"
 							+ res.getResultSet().toString() + "\n");
 				}
+			}
+			if (set != null && set.size() == 0) {
+				this.iWriter.write(res.getLink() + "\t"
+						+ res.getResultSet().toString() + "\n");
 			}
 		} catch (InterruptedException | ExecutionException e) {
 			e.printStackTrace();

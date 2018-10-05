@@ -30,7 +30,7 @@ public class ExtractEmail {
 
 		String link = "http://www.aqualeader.com/en_US/contact/";
 		link = "http://www.hcll.ca";
-		link ="https://www.facebook.com/pg/Shatamtech/about/?ref=page_internal";
+		link ="http://laspolasdelvalle.com/";
 		ExtractEmail obj = new ExtractEmail();
 		Set<String> set = obj.getEmailSet(link);
 		System.out.println(set);

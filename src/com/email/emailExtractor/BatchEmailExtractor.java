@@ -38,10 +38,10 @@ public class BatchEmailExtractor {
 		String timeOutRecords = "/root/RYECache/timeOutRecords.tab";
 
 		if (OsUtils.isWindows()) {
-			path = "E:/ShatamBI/Rye_Delivery/RyeWorkingDirectory/newURL.tab";
-			outPutPath = "E:/ShatamBI/Rye_Delivery/RyeWorkingDirectory/emailResult1.tab";
-			alreadyExtracted = "E:/ShatamBI/Rye_Delivery/RyeWorkingDirectory/emailResult3.tab";
-			timeOutRecords = "E:/ShatamBI/Rye_Delivery/RyeWorkingDirectory/timeOutRecords.tab";
+			path = "E:/ShatamBI/Rye_Delivery/RyeWorkingDirectory/EmailExtraction/ZoomInfoCanada_URLS.csv";
+			outPutPath = "E:/ShatamBI/Rye_Delivery/RyeWorkingDirectory/EmailExtraction/emailResult1.tab";
+			alreadyExtracted = "E:/ShatamBI/Rye_Delivery/RyeWorkingDirectory/EmailExtraction/emailResult3.tab";
+			timeOutRecords = "E:/ShatamBI/Rye_Delivery/RyeWorkingDirectory/EmailExtraction/timeOutRecords.tab";
 		}
 
 		batchEmailExtractor(path, outPutPath, alreadyExtracted, timeOutRecords);
@@ -52,15 +52,14 @@ public class BatchEmailExtractor {
 	}
 
 	/**
-		Batch wise extraction of emails using MultiThreaded Program
-		@param : inputEmailFile
-	             List of email in file separate by newline
-	    @param : outputPath
-	             Output file path.
-	    @param :  ignorURLPath
-	            List of URL which are igoner by Batch Email Extractor Tool
-	    @author Rakesh Chaudhari                          
-	*/
+	 * Batch wise extraction of emails using MultiThreaded Program
+	 * 
+	 * @param : inputEmailFile List of email in file separate by newline
+	 * @param : outputPath Output file path.
+	 * @param : ignorURLPath List of URL which are igoner by Batch Email
+	 *        Extractor Tool
+	 * @author Rakesh Chaudhari
+	 */
 	public static void batchEmailExtractor(String inputEmailFile,
 			String outputPath, String ignorURLPath) throws IOException,
 			InterruptedException, ExecutionException {
@@ -145,18 +144,11 @@ public class BatchEmailExtractor {
 			count++;
 		}
 
-		int successRate = 0;
-
 		service.shutdown();
 		service.awaitTermination(2, TimeUnit.HOURS);
 		System.err.println("Main Thread Stopped" + "\t" + visitedCount);
 		monitor.cancel();
 		Thread.sleep(1000);
-		System.out.println(pool.isTerminated() + "\t" + pool.getActiveCount());
-		BlockingQueue<Runnable> queue = pool.getQueue();
-		System.out.println(pool.isTerminated() + "\t" + pool.getActiveCount()
-				+ "\t" + queue.size());
-		System.out.println("No of Emaild Ids Found: " + successRate);
 		long end = System.currentTimeMillis();
 		System.out.println("Total Latency: \t" + (end - start));
 		writer1.close();
