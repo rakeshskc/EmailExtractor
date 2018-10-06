@@ -3,6 +3,7 @@ package com.email.emailExtractor;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -68,11 +69,10 @@ public class BatchEmailExtractor {
 	}
 
 	public static CustomThreadPoolExecutor pool = null;
-
+	
 	public static void batchEmailExtractor(String inputEmailFile,
 			String outputPath, String ignorURLPath, String timeOutURLListPath)
 			throws IOException, InterruptedException, ExecutionException {
-
 		long start = System.currentTimeMillis();
 		OutPutWriter writer = new OutPutWriter(outputPath);
 		FileWriter writer1 = new FileWriter(new File(timeOutURLListPath), true);
@@ -95,9 +95,7 @@ public class BatchEmailExtractor {
 		// Thread Factory
 		BThreadFactory threadFactory = new BThreadFactory();
 		BlockingQueue<Runnable> blocking = new LinkedBlockingQueue<Runnable>(
-				400);
-		// ThreadPoolExecutor pool = new ThreadPoolExecutor(4, 50, 1,
-		// TimeUnit.MINUTES, blocking);
+				400);		
 		pool = new CustomThreadPoolExecutor(10, 75, 50000,
 				TimeUnit.MILLISECONDS, blocking);
 
@@ -108,14 +106,11 @@ public class BatchEmailExtractor {
 
 		// Monitoring Hook
 		MonitorigThread monitor = new MonitorigThread(
-				CustomThreadPoolExecutor.submittedTask);
+				CustomThreadPoolExecutor.submittedTask,pool);
 		monitor.start();
 
 		// ExecutorService service = Executors.newFixedThreadPool(75, factory);
-		ExecutorService service = pool;
-		List<Future<Result>> resutlSet = new ArrayList<Future<Result>>();
-		List<String> urlListExe = new ArrayList<String>();
-		System.out.println(visited.size());
+		ExecutorService service = pool;		
 		int count = 0;
 		Set<String> set = new HashSet<String>();
 		int visitedCount = 0;

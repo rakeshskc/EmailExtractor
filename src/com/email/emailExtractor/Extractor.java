@@ -17,7 +17,7 @@ public class Extractor implements Callable<Result> {
 		try {
 			Thread.sleep(2);
 			ExtractEmail ex = new ExtractEmail();
-			Result res = new Result(this.link, ex.getEmailSet(this.link));			
+			Result res = new Result(this.link, ex.getEmailSet(this.link));
 			return res;
 		} catch (InterruptedException e) {
 			System.out.println("Intrupting....\t" + this.link);
@@ -26,7 +26,6 @@ public class Extractor implements Callable<Result> {
 			System.out.println(ex);
 		}
 		return new Result(this.link, null);
-
 	}
 
 	@Override
