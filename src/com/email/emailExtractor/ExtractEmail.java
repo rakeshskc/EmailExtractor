@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
@@ -25,12 +26,13 @@ public class ExtractEmail {
 	private static Set<String> visitedLinks = new HashSet<String>();
 	private String baseLink = null;
 	private String redirectLink = null;
+	private static int REQUESTTIMEOUT = 1000 * 60;
 
 	public static void main(String args[]) throws IOException {
 
 		String link = "http://www.aqualeader.com/en_US/contact/";
 		link = "http://www.hcll.ca";
-		link ="https://www.facebook.com/pg/Shatamtech/about/?ref=page_internal";
+		link = "http://laspolasdelvalle.com/";
 		ExtractEmail obj = new ExtractEmail();
 		Set<String> set = obj.getEmailSet(link);
 		System.out.println(set);
@@ -67,7 +69,7 @@ public class ExtractEmail {
 		String html = null;
 		this.baseLink = link;
 		try {
-			html = _getSource(link);			
+			html = _getSource(link);
 		} catch (Exception ex) {
 			// log(ex);
 			return null;
@@ -77,13 +79,21 @@ public class ExtractEmail {
 		searchLink.add(link);// Home page link
 		Set<String> emailSet = new HashSet<String>();
 		for (String emailLink : searchLink) {
-			// log(emailLink);
+
 			String pageHtml = null;
 			try {
 				pageHtml = getHTML(emailLink);
+
 			} catch (Exception ex) {
+				if (Thread.currentThread().isInterrupted()) {
+					break;
+				}
 				continue;
 			}
+			if (Thread.currentThread().isInterrupted()) {
+				break;
+			}
+			//System.out.println(emailSet);
 			Set<String> email = searchForEmail(pageHtml);
 			emailSet.addAll(email);
 		}
@@ -150,7 +160,7 @@ public class ExtractEmail {
 			}
 		}
 		// set.add("http://www.aro.ca/index.php?option=com_content&view=article&id=20&Itemid=114&lang=en");
-		System.out.println(set);
+		//System.out.println(set);
 		return set;
 	}
 
@@ -192,19 +202,26 @@ public class ExtractEmail {
 					java.security.cert.X509Certificate[] certs, String authType) {
 			}
 		} };
+
 		URL url = new URL(link);
 		SSLContext sc = SSLContext.getInstance("SSL");
 		sc.init(null, trustAllCerts, new java.security.SecureRandom());
 		HttpsURLConnection con = null;
 		con = (HttpsURLConnection) url.openConnection();
-		con.setAllowUserInteraction(true);
+		con.setReadTimeout(REQUESTTIMEOUT);
+		con.setDoOutput(false);
+		con.setConnectTimeout(REQUESTTIMEOUT);
+		con.setAllowUserInteraction(false);
 		con.setRequestMethod("GET");
 		con.setSSLSocketFactory(sc.getSocketFactory());
-		return con.getInputStream();
+		con.connect();
+		InputStream inst = con.getInputStream();
+		return inst;
 	}
 
 	private String getRedirectURL(URLConnection conn) throws IOException {
-
+		conn.setReadTimeout(REQUESTTIMEOUT);
+		conn.setConnectTimeout(REQUESTTIMEOUT);
 		int status = ((HttpURLConnection) conn).getResponseCode();
 		if (status != HttpURLConnection.HTTP_OK) {
 			if (status == HttpURLConnection.HTTP_MOVED_TEMP
@@ -222,12 +239,17 @@ public class ExtractEmail {
 	private InputStream _getHTMLNonSecure(String link) throws IOException,
 			KeyManagementException, NoSuchAlgorithmException {
 		URL url = new URL(link);
+
 		HttpURLConnection con = (HttpURLConnection) url.openConnection();
+		con.setReadTimeout(REQUESTTIMEOUT);
+		con.setConnectTimeout(REQUESTTIMEOUT);
 		con.addRequestProperty("Accept-Language", "en-us,en;q=0.5");
 		String urlRedirect = getRedirectURL(con);
+
 		if (urlRedirect != null) {
 			// System.out.println(urlRedirect + "\t Redirected URL");
-			return _getHTMLSecure(urlRedirect);
+			InputStream f = _getHTMLSecure(urlRedirect);
+			return f;
 		}
 		return con.getInputStream();
 	}
@@ -249,7 +271,6 @@ public class ExtractEmail {
 			buff.append(str);
 		}
 		String html = Util.removeHtmlComments(buff.toString());
-		// System. out.println(html);
 		return html;
 	}
 }
